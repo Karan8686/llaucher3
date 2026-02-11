@@ -136,6 +136,7 @@ public final class RecentsActivity extends StatefulActivity<RecentsState> implem
     /**
      * Init drag layer and overview panel views.
      */
+    @SuppressWarnings("removal")
     protected void setupViews() {
         getTheme().applyStyle(getOverviewBlurStyleResId(), true);
         SystemUiProxy systemUiProxy = SystemUiProxy.INSTANCE.get(this);

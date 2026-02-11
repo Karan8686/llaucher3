@@ -96,6 +96,7 @@ public class SystemWindowManagerProxy extends WindowManagerProxy {
     }
 
     @Override
+    @SuppressWarnings("removal")
     public boolean showLockedTaskbarOnHome(Context displayInfoContext) {
         if (!DesktopModeStatus.canEnterDesktopMode(displayInfoContext)) {
             return false;
@@ -108,6 +109,7 @@ public class SystemWindowManagerProxy extends WindowManagerProxy {
     }
 
     @Override
+    @SuppressWarnings("removal")
     public boolean showDesktopTaskbarForFreeformDisplay(Context displayInfoContext) {
         if (!DesktopModeStatus.canEnterDesktopMode(displayInfoContext)) {
             return false;
