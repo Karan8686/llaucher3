@@ -135,6 +135,10 @@
     <!-- Text for both the tile of a popup view, which shows all available widgets installed on
          the device, and the text of a button, which opens this popup view. [CHAR LIMIT=30]-->
     <string name="widget_button_text">Widgets</string>
+    <!-- Label for stretch shortcut in long-press menu. [CHAR_LIMIT=20] -->
+    <string name="stretch_shortcut_label">Stretch</string>
+    <!-- Label for enlarge folder shortcut in long-press menu. [CHAR_LIMIT=20] -->
+    <string name="enlarge_folder_label">Enlarge Folder</string>
     <!-- Search bar text shown in the popup view showing all available widgets installed on the
          device. [CHAR_LIMIT=50] -->
     <string name="widgets_full_sheet_search_bar_hint">Search</string>

@@ -56,6 +56,7 @@ import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
+import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.pm.UserCache;
 import com.android.launcher3.util.ActivityOptionsWrapper;
 import com.android.launcher3.util.ApiWrapper;
@@ -162,6 +163,30 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
             return null;
         }
         return new Widgets(context, itemInfo, originalView);
+    };
+
+    public static final Factory<Launcher> STRETCH = (context, itemInfo, originalView) -> {
+        // Only show stretch option for workspace items (not hotseat)
+        if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
+            return null;
+        }
+        // Only show for app shortcuts, not folders
+        if (itemInfo instanceof com.android.launcher3.model.data.FolderInfo) {
+            return null;
+        }
+        return new StretchShortcut<>(context, itemInfo, originalView);
+    };
+
+    public static final Factory<Launcher> ENLARGE_FOLDER = (context, itemInfo, originalView) -> {
+        // Only show enlarge option for folders on workspace (not hotseat)
+        if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
+            return null;
+        }
+        // Only show for folders
+        if (!(itemInfo instanceof com.android.launcher3.model.data.FolderInfo)) {
+            return null;
+        }
+        return new EnlargeFolderShortcut<>(context, itemInfo, originalView);
     };
 
     public static class Widgets<T extends ActivityContext> extends SystemShortcut<T> {

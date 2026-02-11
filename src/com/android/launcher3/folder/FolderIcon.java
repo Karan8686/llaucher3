@@ -235,6 +235,9 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
 
         icon.setAccessibilityDelegate(activity.getAccessibilityDelegate());
 
+        // Apply OnePlus capsule tile styling for enlarged folders
+        icon.applyStretchStyling(folderInfo);
+
         icon.mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());
         icon.mPreviewVerifier.setFolderInfo(folderInfo);
         icon.updatePreviewItems(false);
@@ -256,6 +259,33 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
         mBackground.getBounds(outBounds);
         // The preview items go outside of the bounds of the background.
         Utilities.scaleRectAboutCenter(outBounds, ICON_OVERLAP_FACTOR);
+    }
+    
+    /**
+     * Applies OnePlus-style capsule tile styling for enlarged folders.
+     * Applies rounded background for folders with spanX > 1 or spanY > 1.
+     */
+    private void applyStretchStyling(FolderInfo info) {
+        boolean isEnlarged = info.spanX > 1 || info.spanY > 1;
+        
+        if (isEnlarged) {
+            // Create rounded rectangle background
+            android.graphics.drawable.GradientDrawable background = 
+                new android.graphics.drawable.GradientDrawable();
+            
+            // Set background color (semi-transparent white for light theme)
+            background.setColor(0x20FFFFFF);
+            
+            // Set corner radius for capsule effect
+            float cornerRadius = getResources().getDimension(R.dimen.bg_round_rect_radius);
+            background.setCornerRadius(cornerRadius);
+            
+            // Apply the background
+            setBackground(background);
+        } else {
+            // Reset to normal styling
+            setBackground(null);
+        }
     }
 
     public float getBackgroundStrokeWidth() {

@@ -97,8 +97,10 @@ import static com.android.launcher3.pageindicators.PaginationArrow.DISABLED_ARRO
 import static com.android.launcher3.pageindicators.PaginationArrow.FULLY_OPAQUE;
 import static com.android.launcher3.popup.SystemShortcut.ADD_TO_HOME_SCREEN;
 import static com.android.launcher3.popup.SystemShortcut.APP_INFO;
+import static com.android.launcher3.popup.SystemShortcut.ENLARGE_FOLDER;
 import static com.android.launcher3.popup.SystemShortcut.INSTALL;
 import static com.android.launcher3.popup.SystemShortcut.REMOVE;
+import static com.android.launcher3.popup.SystemShortcut.STRETCH;
 import static com.android.launcher3.popup.SystemShortcut.UNINSTALL;
 import static com.android.launcher3.popup.SystemShortcut.WIDGETS;
 import static com.android.launcher3.states.RotationHelper.REQUEST_LOCK;
@@ -3011,7 +3013,11 @@ public class Launcher extends StatefulActivity<LauncherState>
      */
     public Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo) {
         int container = itemInfo.container;
-        if (container == CONTAINER_DESKTOP || container == CONTAINER_HOTSEAT) {
+        if (container == CONTAINER_DESKTOP) {
+            // Workspace items: add stretch/enlarge options
+            return Stream.of(APP_INFO, WIDGETS, INSTALL, STRETCH, ENLARGE_FOLDER, REMOVE, UNINSTALL);
+        } else if (container == CONTAINER_HOTSEAT) {
+            // Hotseat items: no stretch options
             return Stream.of(APP_INFO, WIDGETS, INSTALL, REMOVE, UNINSTALL);
         } else if (container == CONTAINER_ALL_APPS || container == CONTAINER_ALL_APPS_PREDICTION) {
             // TODO(b/444744861): Update private space apps to have its own container.
@@ -3024,6 +3030,54 @@ public class Launcher extends StatefulActivity<LauncherState>
             }
         }
         return Stream.of(APP_INFO, WIDGETS, INSTALL, UNINSTALL);
+    }
+
+    /**
+     * Shows a dialog to select stretch size for the given item.
+     *
+     * @param itemInfo The item to stretch/enlarge
+     */
+    public void showStretchOptions(ItemInfo itemInfo) {
+        StretchOptionsHelper.showStretchOptions(this, itemInfo);
+    }
+
+    /**
+     * Resizes a workspace item to the specified span dimensions.
+     *
+     * @param itemInfo The item to resize
+     * @param spanX The new horizontal span
+     * @param spanY The new vertical span
+     */
+    public void resizeWorkspaceItem(ItemInfo itemInfo, int spanX, int spanY) {
+        // Get the CellLayout containing this item
+        CellLayout cellLayout = getCellLayout(itemInfo.container, itemInfo.screenId);
+        if (cellLayout == null) {
+            Toast.makeText(this, "Cannot resize item", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check if the new size would fit
+        if (!cellLayout.isRegionVacant(itemInfo.cellX, itemInfo.cellY, spanX, spanY)) {
+            Toast.makeText(this, "Not enough space to resize", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Update the item's span
+        itemInfo.spanX = spanX;
+        itemInfo.spanY = spanY;
+
+        // Update the database
+        getModelWriter().modifyItemInDatabase(itemInfo, itemInfo.container, itemInfo.screenId,
+                itemInfo.cellX, itemInfo.cellY, spanX, spanY);
+
+        // Refresh the workspace to apply the visual changes
+        View view = cellLayout.getChildAt(itemInfo.cellX, itemInfo.cellY);
+        if (view != null) {
+            cellLayout.removeView(view);
+            mItemInflater.inflateItem(itemInfo, cellLayout);
+        }
+
+        Toast.makeText(this, "Item resized", Toast.LENGTH_SHORT).show();
     }
 
     /**

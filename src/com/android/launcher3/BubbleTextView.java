@@ -441,6 +441,44 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
         applyDotState(info, false /* animate */);
         setDownloadStateContentDescription(info, info.getProgressLevel());
+        
+        // Apply OnePlus capsule tile styling for stretched icons
+        applyStretchStyling(info);
+    }
+    
+    /**
+     * Applies OnePlus-style capsule tile styling for stretched icons.
+     * Hides label and applies rounded background for icons with spanX > 1 or spanY > 1.
+     */
+    private void applyStretchStyling(ItemInfo info) {
+        if (mDisplay != DISPLAY_WORKSPACE) {
+            return; // Only apply to workspace icons
+        }
+        
+        boolean isStretched = info.spanX > 1 || info.spanY > 1;
+        
+        if (isStretched) {
+            // Hide the label for stretched icons
+            setTextVisibility(false);
+            
+            // Create rounded rectangle background
+            android.graphics.drawable.GradientDrawable background = 
+                new android.graphics.drawable.GradientDrawable();
+            
+            // Set background color (semi-transparent white for light theme)
+            background.setColor(0x20FFFFFF);
+            
+            // Set corner radius for capsule effect
+            float cornerRadius = getResources().getDimension(R.dimen.bg_round_rect_radius);
+            background.setCornerRadius(cornerRadius);
+            
+            // Apply the background
+            setBackground(background);
+        } else {
+            // Reset to normal styling
+            setTextVisibility(true);
+            setBackground(null);
+        }
     }
 
     @UiThread
