@@ -166,24 +166,17 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
     };
 
     public static final Factory<Launcher> STRETCH = (context, itemInfo, originalView) -> {
-        // Only show stretch option for workspace items (not hotseat)
-        if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
-            return null;
-        }
-        // Only show for app shortcuts, not folders
-        if (itemInfo instanceof com.android.launcher3.model.data.FolderInfo) {
+        // Show only for app shortcuts on workspace (not hotseat/folder/widgets).
+        if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP
+                || !(itemInfo instanceof WorkspaceItemInfo)) {
             return null;
         }
         return new StretchShortcut<>(context, itemInfo, originalView);
     };
 
     public static final Factory<Launcher> ENLARGE_FOLDER = (context, itemInfo, originalView) -> {
-        // Only show enlarge option for folders on workspace (not hotseat)
-        if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
-            return null;
-        }
-        // Only show for folders
-        if (!(itemInfo instanceof com.android.launcher3.model.data.FolderInfo)) {
+        if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP
+                || !(itemInfo instanceof FolderInfo)) {
             return null;
         }
         return new EnlargeFolderShortcut<>(context, itemInfo, originalView);

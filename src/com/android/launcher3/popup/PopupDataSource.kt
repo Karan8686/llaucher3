@@ -24,6 +24,7 @@ import com.android.launcher3.AbstractFloatingView
 import com.android.launcher3.AbstractFloatingViewHelper
 import com.android.launcher3.DropTargetHandler
 import com.android.launcher3.Flags
+import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherConstants
 import com.android.launcher3.R
 import com.android.launcher3.SecondaryDropTarget
@@ -63,6 +64,23 @@ class PopupDataSource @Inject constructor() {
             iconResId = R.drawable.ic_remove_no_shadow,
             labelResId = R.string.remove_drop_target_label,
             popupAction = handleRemove,
+            category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
+        )
+
+    // Handles action from tapping enlarge folder shortcut.
+    private val handleEnlargeFolder =
+        { activityContext: ActivityContext, itemInfo: ItemInfo, _: View ->
+            if (activityContext is Launcher) {
+                activityContext.showStretchOptions(itemInfo)
+            }
+        }
+
+    // Popup data for enlarge folder shortcut.
+    val enlargeFolderPopupData =
+        PopupData(
+            iconResId = R.drawable.ic_widget,
+            labelResId = R.string.enlarge_folder_label,
+            popupAction = handleEnlargeFolder,
             category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
         )
 

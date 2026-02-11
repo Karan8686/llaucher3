@@ -3056,8 +3056,25 @@ public class Launcher extends StatefulActivity<LauncherState>
             return;
         }
 
-        // Check if the new size would fit
-        if (!cellLayout.isRegionVacant(itemInfo.cellX, itemInfo.cellY, spanX, spanY)) {
+        View itemView = null;
+        ShortcutAndWidgetContainer container = cellLayout.getShortcutsAndWidgets();
+        for (int i = 0; i < container.getChildCount(); i++) {
+            View child = container.getChildAt(i);
+            if (child.getTag() instanceof ItemInfo childInfo && childInfo.id == itemInfo.id) {
+                itemView = child;
+                break;
+            }
+        }
+
+        // Exclude current item from occupancy checks.
+        if (itemView != null) {
+            cellLayout.markCellsAsUnoccupiedForView(itemView);
+        }
+        boolean canResize = cellLayout.isRegionVacant(itemInfo.cellX, itemInfo.cellY, spanX, spanY);
+        if (itemView != null) {
+            cellLayout.markCellsAsOccupiedForView(itemView);
+        }
+        if (!canResize) {
             Toast.makeText(this, "Not enough space to resize", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -3066,16 +3083,22 @@ public class Launcher extends StatefulActivity<LauncherState>
         itemInfo.spanX = spanX;
         itemInfo.spanY = spanY;
 
+        if (itemView != null && itemView.getLayoutParams() instanceof CellLayoutLayoutParams lp) {
+            lp.cellHSpan = spanX;
+            lp.cellVSpan = spanY;
+            itemView.setLayoutParams(lp);
+            if (itemInfo instanceof WorkspaceItemInfo && itemView instanceof BubbleTextView) {
+                ((BubbleTextView) itemView).applyFromWorkspaceItem((WorkspaceItemInfo) itemInfo);
+            }
+        }
+
         // Update the database
         getModelWriter().modifyItemInDatabase(itemInfo, itemInfo.container, itemInfo.screenId,
                 itemInfo.cellX, itemInfo.cellY, spanX, spanY);
 
         // Refresh the workspace to apply the visual changes
-        View view = cellLayout.getChildAt(itemInfo.cellX, itemInfo.cellY);
-        if (view != null) {
-            cellLayout.removeView(view);
-            mItemInflater.inflateItem(itemInfo, cellLayout);
-        }
+        mWorkspace.requestLayout();
+        mWorkspace.invalidate();
 
         Toast.makeText(this, "Item resized", Toast.LENGTH_SHORT).show();
     }
