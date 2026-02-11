@@ -400,6 +400,36 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
                 AbstractFloatingView.TYPE_ALL & ~AbstractFloatingView.TYPE_REBIND_SAFE);
     }
 
+    public static final Factory<ActivityContext> STRETCH =
+            (activity, itemInfo, originalView) -> {
+                if (originalView == null) {
+                    return null;
+                }
+                // Only show for WorkspaceItemInfo on workspace (not hotseat)
+                if (!(itemInfo instanceof WorkspaceItemInfo)) {
+                    return null;
+                }
+                if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
+                    return null;
+                }
+                return new StretchShortcut<>(activity, itemInfo, originalView);
+            };
+
+    public static final Factory<ActivityContext> ENLARGE_FOLDER =
+            (activity, itemInfo, originalView) -> {
+                if (originalView == null) {
+                    return null;
+                }
+                // Only show for FolderInfo on workspace (not hotseat)
+                if (!(itemInfo instanceof com.android.launcher3.model.data.FolderInfo)) {
+                    return null;
+                }
+                if (itemInfo.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
+                    return null;
+                }
+                return new EnlargeFolderShortcut<>(activity, itemInfo, originalView);
+            };
+
     public static final Factory<ActivityContext> BUBBLE_SHORTCUT =
             (activity, itemInfo, originalView) -> {
                 if ((itemInfo.itemType != LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT)

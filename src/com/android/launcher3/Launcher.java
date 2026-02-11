@@ -3150,7 +3150,8 @@ public class Launcher extends StatefulActivity<LauncherState>
     }
 
     public Stream<SystemShortcut.Factory> getSupportedShortcuts() {
-        return Stream.of(APP_INFO, WIDGETS, INSTALL);
+        return Stream.of(APP_INFO, WIDGETS, INSTALL,
+                SystemShortcut.STRETCH, SystemShortcut.ENLARGE_FOLDER);
     }
 
     /**
@@ -3208,6 +3209,91 @@ public class Launcher extends StatefulActivity<LauncherState>
     @Nullable
     public ArrowPopup<?> getOptionsPopup() {
         return findViewById(R.id.popup_container);
+    }
+
+    /**
+     * Shows a dialog to select stretch options for an app shortcut or folder.
+     * @param info The ItemInfo to stretch
+     */
+    public void showStretchOptions(ItemInfo info) {
+        boolean isFolder = info instanceof FolderInfo;
+        String[] options;
+        int[][] spanValues;
+        
+        if (isFolder) {
+            // Folders can only be 1x1 or 2x2
+            options = new String[]{"Normal (1×1)", "Large Tile (2×2)"};
+            spanValues = new int[][]{{1, 1}, {2, 2}};
+        } else {
+            // App shortcuts can be 1x1, 2x1, 1x2, or 2x2
+            options = new String[]{"Normal (1×1)", "Horizontal (2×1)", 
+                                   "Vertical (1×2)", "Large Tile (2×2)"};
+            spanValues = new int[][]{{1, 1}, {2, 1}, {1, 2}, {2, 2}};
+        }
+        
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Resize")
+                .setItems(options, (dialog, which) -> {
+                    int spanX = spanValues[which][0];
+                    int spanY = spanValues[which][1];
+                    resizeWorkspaceItem(info, spanX, spanY);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Resizes a workspace item to the specified span dimensions.
+     * @param info The ItemInfo to resize
+     * @param spanX New horizontal span
+     * @param spanY New vertical span
+     */
+    public void resizeWorkspaceItem(ItemInfo info, int spanX, int spanY) {
+        // Get the current CellLayout containing the item
+        CellLayout layout = mWorkspace.getScreenWithId(info.screenId);
+        if (layout == null) {
+            Toast.makeText(this, "Unable to resize item", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check if the new size would fit without overlapping
+        View child = layout.getChildAt(info.cellX, info.cellY);
+        if (child != null) {
+            // Temporarily mark current cells as vacant
+            layout.markCellsAsUnoccupiedForView(child);
+        }
+
+        boolean fits = layout.isRegionVacant(info.cellX, info.cellY, spanX, spanY);
+
+        if (child != null) {
+            // Restore occupation
+            layout.markCellsAsOccupiedForView(child);
+        }
+
+        if (!fits) {
+            Toast.makeText(this, "Not enough space", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Update the item's span
+        info.spanX = spanX;
+        info.spanY = spanY;
+
+        // Persist to database
+        getModelWriter().modifyItemInDatabase(info, info.container, info.screenId,
+                info.cellX, info.cellY, spanX, spanY);
+
+        // Update the view
+        if (child != null) {
+            CellLayout.LayoutParams lp = (CellLayout.LayoutParams) child.getLayoutParams();
+            lp.cellHSpan = spanX;
+            lp.cellVSpan = spanY;
+            child.setLayoutParams(lp);
+        }
+
+        // Force relayout
+        layout.requestLayout();
+        layout.invalidate();
     }
 
     // End of Getters and Setters

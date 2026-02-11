@@ -606,6 +606,37 @@ public class FolderIcon extends FrameLayout implements FolderListener, FloatingI
 
         if (!mBackgroundIsVisible) return;
 
+        // Apply OnePlus capsule tile styling for enlarged folders
+        boolean isEnlarged = mInfo.spanX > 1 || mInfo.spanY > 1;
+        if (isEnlarged) {
+            // Draw rounded capsule background that fills the entire space
+            android.graphics.drawable.GradientDrawable bg = 
+                    new android.graphics.drawable.GradientDrawable();
+            
+            // Very rounded corners for pill/capsule shape
+            bg.setCornerRadius(dpToPx(24));
+            
+            // Use folder's preview color with good opacity
+            int folderColor = mBackground.getBgColor();
+            int red = android.graphics.Color.red(folderColor);
+            int green = android.graphics.Color.green(folderColor);
+            int blue = android.graphics.Color.blue(folderColor);
+            bg.setColor(android.graphics.Color.argb(180, red, green, blue));
+            
+            bg.setBounds(0, 0, getWidth(), getHeight());
+            bg.draw(canvas);
+            
+            // Hide folder name for enlarged folders
+            if (mFolderName != null) {
+                mFolderName.setVisibility(INVISIBLE);
+            }
+        } else {
+            // Show folder name for normal folders
+            if (mFolderName != null) {
+                mFolderName.setVisibility(VISIBLE);
+            }
+        }
+
         mPreviewItemManager.recomputePreviewDrawingParams();
 
         if (!mBackground.drawingDelegated()) {
@@ -621,6 +652,15 @@ public class FolderIcon extends FrameLayout implements FolderListener, FloatingI
         }
 
         drawDot(canvas);
+    }
+
+    /**
+     * Converts dp to pixels.
+     * @param dp The value in dp
+     * @return The value in pixels
+     */
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     public void drawDot(Canvas canvas) {

@@ -409,6 +409,88 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         applyLoadingState(icon);
         applyDotState(info, false /* animate */);
         setDownloadStateContentDescription(info, info.getProgressLevel());
+        
+        // Apply OnePlus capsule tile styling for stretched icons
+        applyStretchedTileStyling(info);
+    }
+
+    /**
+     * Applies OnePlus-style capsule tile styling for stretched icons.
+     * @param info The WorkspaceItemInfo to check for stretched state
+     */
+    private void applyStretchedTileStyling(WorkspaceItemInfo info) {
+        boolean isStretched = info.spanX > 1 || info.spanY > 1;
+        
+        if (isStretched) {
+            // Hide label for stretched icons
+            setTextVisibility(false);
+            
+            // Scale icon larger for better visibility
+            if (mIcon != null) {
+                mIcon.setScale(1.5f);
+            }
+            
+            // Apply rounded capsule background with vibrant color
+            android.graphics.drawable.GradientDrawable bg = 
+                    new android.graphics.drawable.GradientDrawable();
+            
+            // Very rounded corners for pill/capsule shape
+            float cornerRadius = dpToPx(24);
+            bg.setCornerRadius(cornerRadius);
+            
+            // Use the app's icon color for a vibrant background
+            int backgroundColor = getTileBackgroundColor();
+            bg.setColor(backgroundColor);
+            
+            setBackground(bg);
+            
+            // Remove padding so background fills the entire cell
+            setPadding(0, 0, 0, 0);
+            
+            // Center the icon
+            setGravity(android.view.Gravity.CENTER);
+        } else {
+            // Reset to normal styling
+            setTextVisibility(shouldTextBeVisible());
+            if (mIcon != null) {
+                mIcon.setScale(1.0f);
+            }
+            setBackground(null);
+            setPadding(0, 0, 0, 0);
+            setGravity(android.view.Gravity.TOP | android.view.Gravity.CENTER_HORIZONTAL);
+        }
+    }
+
+    /**
+     * Gets the background color for the capsule tile.
+     * Uses the app's icon color with adjusted alpha for vibrancy.
+     * @return Background color for the tile
+     */
+    private int getTileBackgroundColor() {
+        if (mIcon != null) {
+            // Get the dominant color from the icon
+            int iconColor = mIcon.getIconColor();
+            
+            // Extract RGB components
+            int red = android.graphics.Color.red(iconColor);
+            int green = android.graphics.Color.green(iconColor);
+            int blue = android.graphics.Color.blue(iconColor);
+            
+            // Return with moderate alpha for a vibrant but not overwhelming background
+            return android.graphics.Color.argb(180, red, green, blue);
+        }
+        
+        // Fallback to semi-transparent white if no icon color available
+        return android.graphics.Color.argb(100, 255, 255, 255);
+    }
+
+    /**
+     * Converts dp to pixels.
+     * @param dp The value in dp
+     * @return The value in pixels
+     */
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     @UiThread

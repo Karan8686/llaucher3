@@ -232,6 +232,10 @@
     <string name="pin_prediction">Pin Prediction</string>
     <!-- Label for bubbling a launcher item. [CHAR_LIMIT=20] -->
     <string name="bubble">Bubble</string>
+    <!-- Label for stretching an app shortcut to occupy multiple cells. [CHAR_LIMIT=20] -->
+    <string name="stretch_label">Stretch</string>
+    <!-- Label for enlarging a folder to occupy multiple cells. [CHAR_LIMIT=20] -->
+    <string name="enlarge_folder_label">Enlarge Folder</string>
 
     <!-- Permissions: -->
     <skip />
